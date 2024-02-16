@@ -1,0 +1,44 @@
+version: '3.9'  # Adjust if you have a different preferred Docker Compose version
+
+services:
+  app:
+    build:
+      context: .  # Assuming your Dockerfile is at the project root
+      dockerfile: Dockerfile
+    ports:
+      - "3030:3030"  # Assuming your NestJS app listens on port 3000
+    depends_on:
+      - postgres
+      - minio
+    volumes:
+     - ./:/app  # Mounts current project directory into the container for development
+
+  postgres:
+    image: postgres:15  # Use the latest stable PostgreSQL version
+    ports:
+      - "5457:5432"
+    environment:
+      - POSTGRES_USER=your_username
+      - POSTGRES_PASSWORD=your_password
+      - POSTGRES_DB=medx_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"  # Minio console
+      - "9001:9001"  # Minio API
+    environment:
+      - MINIO_ROOT_USER=your_minio_username
+      - MINIO_ROOT_PASSWORD=your_minio_password
+    command: server /data  # Specifies data storage location
+    volumes:
+      - minio_data:/data
+
+  nats:
+    image: nats:latest
+
+volumes:
+  postgres_data:
+  minio_data:
